@@ -28,6 +28,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework.authtoken',
+    'djoser'
 ]
 
 MIDDLEWARE = [
@@ -91,11 +93,33 @@ AUTH_PASSWORD_VALIDATORS = [
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'    
+        'rest_framework.permissions.IsAuthenticated', 
     ],
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+    'DEFAULT_PAGINATION_CLASS':
+        'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 6
 }
+
+
+DJOSER = {
+       #'LOGIN_FIELD': 'email',
+       'SERIALIZERS': { 
+           'user_create': 'users.serializers.RegisterUserSerializer',
+           'user': 'users.serializers.CustomUserSerializer',
+           'current_user': 'users.serializers.CustomUserSerializer',
+       },
+       'USER_ID_FIELD': 'id',
+       'HIDE_USERS': False,
+       'PERMISSIONS': {
+           'user': ['rest_framework.permissions.IsAuthenticated'],
+           'user_list': ['rest_framework.permissions.AllowAny']           
+       },
+   }
+
 
 LANGUAGE_CODE = 'ru-ru'
 
