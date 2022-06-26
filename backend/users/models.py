@@ -17,7 +17,8 @@ class User(AbstractUser):
     email = models.EmailField("email adress", unique=True, max_length=254)
     first_name = models.TextField(max_length=150)
     last_name = models.TextField(max_length=150)
-    
+
+
 class Follow(models.Model):
     user = models.ForeignKey(
         User,
