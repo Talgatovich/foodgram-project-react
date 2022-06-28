@@ -10,13 +10,15 @@ class User(AbstractUser):
         unique=True,
         validators=[
             RegexValidator(
-                regex=r"^[-a-zA-Z0-9_]+$", message="Недопустимое имя пользователя"
-            )
+                regex=r"^[-a-zA-Z0-9_]+$", message="Недопустимое имя")
         ],
     )
     email = models.EmailField("email adress", unique=True, max_length=254)
     first_name = models.TextField(max_length=150)
     last_name = models.TextField(max_length=150)
+    
+    def __str__(self):
+        return self.username
 
 
 class Follow(models.Model):
@@ -28,7 +30,7 @@ class Follow(models.Model):
         related_name='follower',
         verbose_name='Подписчик'
     )
-    author = models.ForeignKey(
+    following = models.ForeignKey(
         User,
         blank=True,
         null=True,
@@ -37,9 +39,13 @@ class Follow(models.Model):
         verbose_name='Подписка'
     )
 
+    def __str__(self):
+        return self.user.username
+    
     class Meta:
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'
         constraints = [
-            UniqueConstraint(fields=['user', 'author'], name='follow_unique')
+            UniqueConstraint(fields=['user', 'following'], name='follow_unique')
         ]
+    

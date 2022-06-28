@@ -9,9 +9,10 @@ User = get_user_model()
 
 
 class CustomUserSerializer(UserSerializer):
+    following = serializers.StringRelatedField(many=True, read_only=True)
     class Meta:
         model = User
-        fields = ('email', 'id', 'username', 'first_name', 'last_name')   
+        fields = ('email', 'id', 'username', 'first_name', 'last_name')
 
 
 class RegisterUserSerializer(UserCreateSerializer):
@@ -20,10 +21,14 @@ class RegisterUserSerializer(UserCreateSerializer):
         fields = ('email', 'password', 'username', 'first_name', 'last_name')
 
 
-class FollowSerializer(serializers.ModelSerializer):
+class FollowCreateSerializer(serializers.ModelSerializer):
+    """ Сериализатор для добавления и удаления подписки на автора"""
+    following = serializers.StringRelatedField(read_only=True)
+    user = serializers.StringRelatedField(read_only=True)
+    
     class Meta:
         model = Follow
-        fields = ("id", "user", "following")
+        fields = ('user', 'following', )
         validators = [
             UniqueTogetherValidator(
                 queryset=Follow.objects.all(), fields=("user", "following")

@@ -93,7 +93,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated', 
+        'rest_framework.permissions.AllowAny',  #IsAuthenticated
     ],
 
     'DEFAULT_AUTHENTICATION_CLASSES': [
@@ -115,7 +115,7 @@ DJOSER = {
        'USER_ID_FIELD': 'id',
        'HIDE_USERS': False,
        'PERMISSIONS': {
-           'user': ['rest_framework.permissions.IsAuthenticated'],
+           'user': ['rest_framework.permissions.AllowAny'],
            'user_list': ['rest_framework.permissions.AllowAny']           
        },
    }

@@ -1,29 +1,19 @@
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
-from rest_framework import mixins, serializers, viewsets
+from rest_framework import generics
 
 from .models import Follow
-from .serializers import FollowSerializer
+from .serializers import FollowCreateSerializer
 
 User = get_user_model()
 
-
-class CreateListViewSet(
-    mixins.CreateModelMixin, mixins.ListModelMixin, viewsets.GenericViewSet
-):
-
-    pass
-
-
-class FollowViewSet(viewsets.ModelViewSet):
-    queryset = Follow.objects.all()
-    serializer_class = FollowSerializer
+class FollowViewSet(generics.ListAPIView):
+    queryset = User.objects.all()
+    serializer_class = FollowCreateSerializer
 
     def get_queryset(self):
-        user_id = self.request.user.id
-        user = get_object_or_404(User, id=user_id)
-        new_queryset = user.follower
+        user = self.request.user
+        #user = get_object_or_404(User, id=user_id)
+        new_queryset = Follow.objects.all().filter(user=user)
         return new_queryset
 
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
