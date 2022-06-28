@@ -1,14 +1,14 @@
 from django.urls import include, path
 from djoser import views
 
-from .views import FollowViewSet
+from .views import FollowCreateAPIView, FollowListAPIView
 
-urlpatterns = [    
-    path('users/subscriptions/', FollowViewSet.as_view(),
-         name='subscription'),
-    path('', include('djoser.urls')),
-    path('auth/token/login/', views.TokenCreateView.as_view(), name='login'),
-    path('auth/token/logout/', views.TokenDestroyView.as_view(),
+urlpatterns = [   
+     path('users/<int:id>/subscribe/', FollowCreateAPIView.as_view(), name='subscribe'),
+     path('users/subscriptions/', FollowListAPIView.as_view(), name='subscriptions'),
+     path('', include('djoser.urls')),
+     path('auth/token/login/', views.TokenCreateView.as_view(), name='login'),
+     path('auth/token/logout/', views.TokenDestroyView.as_view(),
          name='logout'),
 
 ]
