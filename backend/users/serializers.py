@@ -10,6 +10,7 @@ User = get_user_model()
 
 
 class CustomUserSerializer(UserSerializer):
+    
     is_subscribed = serializers.SerializerMethodField()
     class Meta:
         model = User
@@ -24,6 +25,7 @@ class CustomUserSerializer(UserSerializer):
     
 
 class RegisterUserSerializer(UserCreateSerializer):
+    """ Сериализатор для регистрации пользователя"""
     class Meta:
         model = User
         fields = ('email', 'password', 'username', 'first_name', 'last_name')
@@ -60,19 +62,32 @@ class FollowingRecipesSerializers(serializers.ModelSerializer):
 
 
 class FollowListSerializer(serializers.ModelSerializer):
+    '''
+    Возвращает пользователей, на которых подписан текущий пользователь. 
+    В выдачу добавляются рецепты.
+    '''
     is_subscribed = serializers.SerializerMethodField()
     recipe = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField()
+    
     class Meta:
         model = User
-        fields = ('email', 'id', 'username', 'first_name', 'last_name', 'recipe', 'is_subscribed', 'recipes_count')
+        fields = (
+            'email',
+            'id',
+            'username',
+            'first_name',
+            'last_name',
+            'recipe',
+            'is_subscribed',
+            'recipes_count'
+        )
         read_only_fields = fields
 
     def get_is_subscribed(self, obj):
         request = self.context.get('request')
         user = request.user
         following = obj.follower.filter(user=obj, following=user)
-        
         return following.exists()
     
     def get_recipe(self, obj):
@@ -84,6 +99,3 @@ class FollowListSerializer(serializers.ModelSerializer):
     def get_recipes_count(self, obj):
         count = obj.recipe.all().count()
         return count
-        
-
-

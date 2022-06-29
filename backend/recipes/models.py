@@ -45,4 +45,4 @@ class Recipe(models.Model):
     pub_date = models.DateTimeField('Дата публикации', auto_now_add=True)
 
     def __str__(self):
-        return self.id, self.name
+        return self.name

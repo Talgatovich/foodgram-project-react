@@ -2,8 +2,9 @@ from django.contrib import admin
 from django.urls import include, path
 
 api_paths = [
+    path('', include('recipes.urls')),
     path('', include('users.urls')),
-    #path('', include('recipes.urls'))
+    
 ]
 
 
