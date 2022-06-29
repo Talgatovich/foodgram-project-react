@@ -41,4 +41,8 @@ class Recipe(models.Model):
         verbose_name="ингридиент",
     )
     text = models.CharField(max_length=500)
+    cooking_time = models.CharField(max_length=20)
     pub_date = models.DateTimeField('Дата публикации', auto_now_add=True)
+
+    def __str__(self):
+        return self.id, self.name

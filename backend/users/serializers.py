@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from djoser.serializers import UserCreateSerializer, UserSerializer
+from recipes.models import Recipe
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
@@ -9,11 +10,18 @@ User = get_user_model()
 
 
 class CustomUserSerializer(UserSerializer):
-    
+    is_subscribed = serializers.SerializerMethodField()
     class Meta:
         model = User
-        fields = ('email', 'id', 'username', 'first_name', 'last_name')
-
+        fields = ('email', 'id', 'username', 'first_name', 'last_name', "is_subscribed")
+    
+    def get_is_subscribed(self, obj):
+        request = self.context.get('request')
+        user = request.user
+        following = obj.follower.filter(user=obj, following=user)
+        
+        return following.exists()  
+    
 
 class RegisterUserSerializer(UserCreateSerializer):
     class Meta:
@@ -44,9 +52,38 @@ class FollowCreateSerializer(serializers.ModelSerializer):
         return value
 
 
-class FollowListSerializer(serializers.ModelSerializer):
+class FollowingRecipesSerializers(serializers.ModelSerializer):
+    
+    class Meta:
+        model = Recipe
+        fields = ('id', 'name', 'image', 'cooking_time')
 
+
+class FollowListSerializer(serializers.ModelSerializer):
+    is_subscribed = serializers.SerializerMethodField()
+    recipe = serializers.SerializerMethodField()
+    recipes_count = serializers.SerializerMethodField()
     class Meta:
         model = User
-        fields = ('email', 'id', 'username', 'first_name', 'last_name', 'recipe')
+        fields = ('email', 'id', 'username', 'first_name', 'last_name', 'recipe', 'is_subscribed', 'recipes_count')
         read_only_fields = fields
+
+    def get_is_subscribed(self, obj):
+        request = self.context.get('request')
+        user = request.user
+        following = obj.follower.filter(user=obj, following=user)
+        
+        return following.exists()
+    
+    def get_recipe(self, obj):
+        request = self.context.get('request')
+        context = {'request': request}
+        recipe = obj.recipe.all()
+        return FollowingRecipesSerializers(recipe, context=context, many=True).data
+    
+    def get_recipes_count(self, obj):
+        count = obj.recipe.all().count()
+        return count
+        
+
+
