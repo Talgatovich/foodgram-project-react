@@ -1,8 +1,10 @@
-from rest_framework import viewsets
+from django.shortcuts import get_object_or_404
+from rest_framework import status, views, viewsets
+from rest_framework.response import Response
 
-from .models import Ingridients, Recipe, Tag
-from .serializers import (IngridientsListSerializer, RecipesListSerializer,
-                          TagListSerializer)
+from .models import Favorite, Ingridients, Recipe, Tag
+from .serializers import (FavoriteSerializer, IngridientsListSerializer,
+                          RecipesListSerializer, TagListSerializer)
 
 
 class TagsViewSet(viewsets.ModelViewSet):
@@ -18,3 +20,24 @@ class IngredientsViewSet(viewsets.ModelViewSet):
 class RecipesViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipesListSerializer
+
+
+class FavoriteAPIView(views.APIView):
+
+    def post(self, request, id):
+        user_id = request.user.id
+        data = {'user': user_id, 'recipe': id}
+        serializer = FavoriteSerializer(data=data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+    def delete(self, request, id):
+        user = request.user
+        recipe = get_object_or_404(Recipe, id=id)
+        deleting_obj = Favorite.objects.all().filter(user=user, recipe=recipe)
+        if not deleting_obj:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        deleting_obj.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+        

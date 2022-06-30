@@ -1,7 +1,8 @@
+from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 from users.serializers import CustomUserSerializer
 
-from .models import Ingridients, Recipe, Tag
+from .models import Favorite, Ingridients, Recipe, Tag
 
 
 class TagListSerializer(serializers.ModelSerializer):
@@ -18,10 +19,29 @@ class IngridientsListSerializer(serializers.ModelSerializer):
         fields = ("id", "name", "measurement_unit", 'amount')
 
 
+class RecipesFavoriteListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Recipe
+        fields = (
+            "id",
+            "name",
+            "image",
+            "cooking_time"
+        )
+
+
+class FavoriteSerializer(serializers.ModelSerializer):
+    recipe = RecipesFavoriteListSerializer
+    class Meta:
+        model = Favorite
+        fields = ("id","user", "recipe",) #'__all__' #('recipe',)
+
+
 class RecipesListSerializer(serializers.ModelSerializer):
     tag = TagListSerializer(many=True)
     author = CustomUserSerializer(read_only=True)
     ingredients = IngridientsListSerializer(many=True)
+    image = Base64ImageField()
     class Meta:
         model = Recipe
         fields = (

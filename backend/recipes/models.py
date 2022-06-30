@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.db.models import UniqueConstraint
 
 User = get_user_model()
 
@@ -26,8 +27,10 @@ class Recipe(models.Model):
     tag = models.ManyToManyField(Tag)
     name = models.CharField(max_length=200)
     image = models.ImageField(
-        'Картинка',
-        blank=True
+        upload_to='recipes/', 
+        blank=False, 
+        null=False,
+        verbose_name='Картинка'
     )
     ingredients = models.ManyToManyField(Ingridients)
     text = models.CharField(max_length=500)
@@ -36,3 +39,23 @@ class Recipe(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Favorite(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='favorite'
+    )
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+        related_name='favorite_recipe'
+    )
+    class Meta:
+        constraints = [
+            UniqueConstraint(
+                fields=['user', 'recipe'],
+                name='recipe_in_favorite_unique'
+            )
+        ]
