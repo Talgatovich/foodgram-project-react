@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from users.serializers import CustomUserSerializer
 
 from .models import Ingridients, Recipe, Tag
 
@@ -11,13 +12,16 @@ class TagListSerializer(serializers.ModelSerializer):
 
 
 class IngridientsListSerializer(serializers.ModelSerializer):
-
+    amount = serializers.CharField(source='quantity')
     class Meta:
         model = Ingridients
-        fields = ("id", "name", "measurement_unit")
+        fields = ("id", "name", "measurement_unit", 'amount')
+
 
 class RecipesListSerializer(serializers.ModelSerializer):
-    
+    tag = TagListSerializer(many=True)
+    author = CustomUserSerializer(read_only=True)
+    ingredients = IngridientsListSerializer(many=True)
     class Meta:
         model = Recipe
         fields = (
@@ -29,7 +33,4 @@ class RecipesListSerializer(serializers.ModelSerializer):
             "image",
             "text",
             "cooking_time"
-        ) # добавить потом "is_favorited", "is_in_shopping_cart"
-        
-
-
+        ) #  добавить потом "is_favorited", "is_in_shopping_cart"

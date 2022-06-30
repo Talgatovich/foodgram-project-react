@@ -23,23 +23,13 @@ class Recipe(models.Model):
         related_name="recipe",
         verbose_name="автор",
     )
-    tag = models.ForeignKey(
-        Tag,
-        on_delete=models.DO_NOTHING,
-        related_name="tag",
-        verbose_name="тэг",
-    )
+    tag = models.ManyToManyField(Tag)
     name = models.CharField(max_length=200)
     image = models.ImageField(
         'Картинка',
         blank=True
     )
-    ingredients = models.ForeignKey(
-        Ingridients,
-        on_delete=models.CASCADE,
-        related_name="ingridient",
-        verbose_name="ингридиент",
-    )
+    ingredients = models.ManyToManyField(Ingridients)
     text = models.CharField(max_length=500)
     cooking_time = models.CharField(max_length=20)
     pub_date = models.DateTimeField('Дата публикации', auto_now_add=True)
