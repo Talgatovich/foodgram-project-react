@@ -14,6 +14,7 @@ class TagListSerializer(serializers.ModelSerializer):
 
 class IngridientsListSerializer(serializers.ModelSerializer):
     amount = serializers.CharField(source='quantity')
+
     class Meta:
         model = Ingridients
         fields = ("id", "name", "measurement_unit", 'amount')
@@ -31,17 +32,21 @@ class RecipesFavoriteListSerializer(serializers.ModelSerializer):
 
 
 class FavoriteSerializer(serializers.ModelSerializer):
+
     recipe = RecipesFavoriteListSerializer
+    
     class Meta:
         model = Favorite
-        fields = ("id","user", "recipe",) #'__all__' #('recipe',)
+        fields = ("id", "user", "recipe",) #  '__all__' #('recipe',)
 
 
 class RecipesListSerializer(serializers.ModelSerializer):
+    
     tag = TagListSerializer(many=True)
     author = CustomUserSerializer(read_only=True)
     ingredients = IngridientsListSerializer(many=True)
     image = Base64ImageField()
+    
     class Meta:
         model = Recipe
         fields = (
@@ -53,4 +58,31 @@ class RecipesListSerializer(serializers.ModelSerializer):
             "image",
             "text",
             "cooking_time"
-        ) #  добавить потом "is_favorited", "is_in_shopping_cart"
+        )  #  добавить потом "is_favorited", "is_in_shopping_cart"
+
+
+class RecipesIngredientSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Ingridients
+        fields = ('id', 'amount')
+
+
+class RecipesCreateEditSerializer(serializers.ModelSerializer):
+    
+    tag = serializers.PrimaryKeyRelatedField(many=True)
+    author = CustomUserSerializer(read_only=True)
+    ingredients = RecipesIngredientSerializer(many=True)
+    image = Base64ImageField()
+    
+    class Meta:
+        model = Recipe
+        fields = (
+            "id",
+            "tag",
+            "author",
+            "ingredients",
+            "name",
+            "image",
+            "text",
+            "cooking_time"
+        )  #  добавить потом "is_favorited", "is_in_shopping_cart"

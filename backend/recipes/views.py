@@ -4,7 +4,8 @@ from rest_framework.response import Response
 
 from .models import Favorite, Ingridients, Recipe, Tag
 from .serializers import (FavoriteSerializer, IngridientsListSerializer,
-                          RecipesListSerializer, TagListSerializer)
+                          RecipesCreateEditSerializer, RecipesListSerializer,
+                          TagListSerializer)
 
 
 class TagsViewSet(viewsets.ModelViewSet):
@@ -20,6 +21,12 @@ class IngredientsViewSet(viewsets.ModelViewSet):
 class RecipesViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipesListSerializer
+    actions_list = ['create', 'update']
+    
+    def get_serializer_class(self):
+        if self.action in self.actions_list:
+            return RecipesCreateEditSerializer
+        return RecipesListSerializer
 
 
 class FavoriteAPIView(views.APIView):
@@ -31,7 +38,7 @@ class FavoriteAPIView(views.APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-    
+
     def delete(self, request, id):
         user = request.user
         recipe = get_object_or_404(Recipe, id=id)
@@ -40,4 +47,3 @@ class FavoriteAPIView(views.APIView):
             return Response(status=status.HTTP_400_BAD_REQUEST)
         deleting_obj.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-        
