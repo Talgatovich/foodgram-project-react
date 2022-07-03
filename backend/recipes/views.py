@@ -4,7 +4,7 @@ from rest_framework.response import Response
 
 from .models import Favorite, Ingridients, Recipe, Tag
 from .serializers import (FavoriteSerializer, IngridientsListSerializer,
-                          RecipesCreateEditSerializer, RecipesListSerializer,
+                          RecipesCreateSerializer, RecipesListSerializer,
                           TagListSerializer)
 
 
@@ -25,7 +25,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
     
     def get_serializer_class(self):
         if self.request.method in self.actions_list:            
-            return RecipesCreateEditSerializer        
+            return RecipesCreateSerializer        
         return RecipesListSerializer
 
 
