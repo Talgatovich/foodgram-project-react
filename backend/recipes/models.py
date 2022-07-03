@@ -13,7 +13,7 @@ class Tag(models.Model):
 
 class Ingridients(models.Model):
     name = models.CharField(max_length=200)
-    quantity = models.IntegerField(blank=False)
+    amount = models.IntegerField(blank=False)
     measurement_unit = models.CharField(max_length=100)
 
 
@@ -24,7 +24,7 @@ class Recipe(models.Model):
         related_name="recipe",
         verbose_name="автор",
     )
-    tag = models.ManyToManyField(Tag)
+    tag = models.ManyToManyField(Tag, through='RecipeTag')
     name = models.CharField(max_length=200)
     image = models.ImageField(
         upload_to='recipes/media/',
@@ -39,6 +39,11 @@ class Recipe(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class RecipeTag(models.Model):
+    recipe = models.ForeignKey(Recipe, related_name='recipe_tag', on_delete=models.CASCADE)
+    tag = models.ForeignKey(Tag, related_name='recipe_tag', on_delete=models.DO_NOTHING)
 
 
 class Favorite(models.Model):

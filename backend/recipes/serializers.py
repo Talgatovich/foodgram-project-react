@@ -1,3 +1,4 @@
+from django.shortcuts import get_object_or_404
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 from users.serializers import CustomUserSerializer
@@ -13,7 +14,6 @@ class TagListSerializer(serializers.ModelSerializer):
 
 
 class IngridientsListSerializer(serializers.ModelSerializer):
-    amount = serializers.CharField(source='quantity')
 
     class Meta:
         model = Ingridients
@@ -69,11 +69,11 @@ class RecipesIngredientSerializer(serializers.ModelSerializer):
 
 class RecipesCreateEditSerializer(serializers.ModelSerializer):
     
-    tag = serializers.PrimaryKeyRelatedField(many=True)
+    tag = serializers.PrimaryKeyRelatedField(queryset=Tag.objects.all(), many=True)
     author = CustomUserSerializer(read_only=True)
     ingredients = RecipesIngredientSerializer(many=True)
     image = Base64ImageField()
-    
+
     class Meta:
         model = Recipe
         fields = (
@@ -86,3 +86,16 @@ class RecipesCreateEditSerializer(serializers.ModelSerializer):
             "text",
             "cooking_time"
         )  #  добавить потом "is_favorited", "is_in_shopping_cart"
+    
+    #def create(self, validated_data):
+    #    author = self.context.get('request').user     
+    #    tag_from_data = validated_data.pop('tag')
+    #    ingredients_from_data = validated_data.pop('ingredients')        
+    #    recipe = Recipe.objects.create(author=author, **validated_data)
+    #    
+    #    
+    #    
+    #    
+    #    return recipe
+    #    
+        

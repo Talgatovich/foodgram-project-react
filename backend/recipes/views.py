@@ -21,11 +21,11 @@ class IngredientsViewSet(viewsets.ModelViewSet):
 class RecipesViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipesListSerializer
-    actions_list = ['create', 'update']
+    actions_list = ['POST', 'PATCH']
     
     def get_serializer_class(self):
-        if self.action in self.actions_list:
-            return RecipesCreateEditSerializer
+        if self.request.method in self.actions_list:            
+            return RecipesCreateEditSerializer        
         return RecipesListSerializer
 
 
