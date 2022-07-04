@@ -103,3 +103,11 @@ class RecipesCreateSerializer(serializers.ModelSerializer):
         recipe.tag.set(tag_from_data)
         return recipe
         
+    def update(self, instance, validated_data):
+        instance.image = validated_data.get('image', instance.image)
+        instance.name = validated_data.get('name', instance.name)
+        instance.text = validated_data.get('text', instance.text)
+        instance.cooking_time = validated_data.get('cooking_time', instance.cooking_time)
+        instance.tag = validated_data.get('tag', instance.tag)
+        
+        
