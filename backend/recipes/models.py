@@ -13,9 +13,9 @@ class Tag(models.Model):
     def __str__(self):
         return self.name
 
+
 class Ingridients(models.Model):
     name = models.CharField(max_length=200)
-    amount = models.PositiveIntegerField()
     measurement_unit = models.CharField(max_length=100)
 
     def __str__(self):
@@ -28,7 +28,7 @@ class Recipe(models.Model):
         related_name="recipe",
         verbose_name="автор",
     )
-    tag = models.ManyToManyField(Tag, through='RecipeTag')
+    tags = models.ManyToManyField(Tag, through='RecipeTag')
     name = models.CharField(max_length=200)
     image = models.ImageField(
         upload_to='recipes/media/',
@@ -46,14 +46,14 @@ class Recipe(models.Model):
 
 
 class RecipeIngredients(models.Model):
-    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
-    ingredient = models.ForeignKey(Ingridients, on_delete=models.PROTECT)
-    
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, related_name='recipe')
+    ingredient = models.ForeignKey(Ingridients, on_delete=models.PROTECT, related_name='ingredient')
+    amount = models.PositiveIntegerField(verbose_name='Количество')
 
 
 class RecipeTag(models.Model):
     recipe = models.ForeignKey(Recipe, related_name='recipe_tag', on_delete=models.CASCADE)
-    tag = models.ForeignKey(Tag, related_name='recipe_tag', on_delete=models.DO_NOTHING)
+    tags = models.ForeignKey(Tag, related_name='recipe_tag', on_delete=models.DO_NOTHING)
 
 
 class Favorite(models.Model):
@@ -75,3 +75,28 @@ class Favorite(models.Model):
                 name='recipe_in_favorite_unique'
             )
         ]
+        verbose_name = 'Избранное'
+        verbose_name_plural = 'Избранное'
+
+
+class ShoppingCart(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='shopping_cart'
+    )
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+        related_name='recipe_in_shopping_cart'
+    )
+
+    class Meta:
+        constraints = [
+            UniqueConstraint(
+                fields=['user', 'recipe'],
+                name='recipe_in_shopping_cart'
+            )
+        ]
+        verbose_name = 'Список покупок'
+        verbose_name_plural = 'Список покупок'

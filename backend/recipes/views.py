@@ -2,10 +2,10 @@ from django.shortcuts import get_object_or_404
 from rest_framework import status, views, viewsets
 from rest_framework.response import Response
 
-from .models import Favorite, Ingridients, Recipe, Tag
+from .models import Favorite, Ingridients, Recipe, ShoppingCart, Tag
 from .serializers import (FavoriteSerializer, IngridientsListSerializer,
                           RecipesCreateSerializer, RecipesListSerializer,
-                          TagListSerializer)
+                          ShoppingCartSerializer, TagListSerializer)
 
 
 class TagsViewSet(viewsets.ModelViewSet):
@@ -24,8 +24,8 @@ class RecipesViewSet(viewsets.ModelViewSet):
     actions_list = ['POST', 'PATCH']
     
     def get_serializer_class(self):
-        if self.request.method in self.actions_list:            
-            return RecipesCreateSerializer        
+        if self.request.method in self.actions_list:
+            return RecipesCreateSerializer
         return RecipesListSerializer
 
 
@@ -43,6 +43,26 @@ class FavoriteAPIView(views.APIView):
         user = request.user
         recipe = get_object_or_404(Recipe, id=id)
         deleting_obj = Favorite.objects.all().filter(user=user, recipe=recipe)
+        if not deleting_obj:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        deleting_obj.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
+
+class ShoppingCartAPIView(views.APIView):
+    
+    def post(self, request, id):
+        user_id = request.user.id
+        data = {'user': user_id, 'recipe': id}
+        serializer = ShoppingCartSerializer(data=data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def delete(self, request, id):
+        user = request.user
+        recipe = get_object_or_404(Recipe, id=id)
+        deleting_obj = ShoppingCart.objects.all().filter(user=user, recipe=recipe)
         if not deleting_obj:
             return Response(status=status.HTTP_400_BAD_REQUEST)
         deleting_obj.delete()
