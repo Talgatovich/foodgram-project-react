@@ -2,7 +2,8 @@ from django.shortcuts import get_object_or_404
 from rest_framework import status, views, viewsets
 from rest_framework.response import Response
 
-from .models import Favorite, Ingridients, Recipe, ShoppingCart, Tag
+from .models import (Favorite, Ingridients, Recipe, RecipeIngredients,
+                     ShoppingCart, Tag)
 from .serializers import (FavoriteSerializer, IngridientsListSerializer,
                           RecipesCreateSerializer, RecipesListSerializer,
                           ShoppingCartSerializer, TagListSerializer)
@@ -67,3 +68,25 @@ class ShoppingCartAPIView(views.APIView):
             return Response(status=status.HTTP_400_BAD_REQUEST)
         deleting_obj.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def get(self, request):
+        ingridients = {}
+        user = request.user        
+        recipes_in_cart = ShoppingCart.objects.all().filter(user=user)
+        
+        for obj in recipes_in_cart:
+            recipe = obj.recipe            
+            recipe_ingredients = recipe.ingredients.all()
+            for ingredient in recipe_ingredients:
+                name = ingredient.name
+                amounts = RecipeIngredients.objects.all().filter(recipe=recipe)
+                for val in amounts:
+                    amount = val.amount
+                    try:
+                        ingridients[name]+=amount
+                    except:
+                        ingridients[name]=amount
+                        
+        return ingridients
+                    
+        
