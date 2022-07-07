@@ -21,7 +21,7 @@ class CustomUserSerializer(UserSerializer):
         user = request.user
         following = obj.follower.filter(user=obj, following=user)
         
-        return following.exists()  
+        return following.exists()
     
 
 class RegisterUserSerializer(UserCreateSerializer):
@@ -55,7 +55,7 @@ class FollowCreateSerializer(serializers.ModelSerializer):
 
 
 class FollowingRecipesSerializers(serializers.ModelSerializer):
-    
+
     class Meta:
         model = Recipe
         fields = ('id', 'name', 'image', 'cooking_time')
@@ -63,13 +63,13 @@ class FollowingRecipesSerializers(serializers.ModelSerializer):
 
 class FollowListSerializer(serializers.ModelSerializer):
     '''
-    Возвращает пользователей, на которых подписан текущий пользователь. 
+    Возвращает пользователей, на которых подписан текущий пользователь.
     В выдачу добавляются рецепты.
     '''
     is_subscribed = serializers.SerializerMethodField()
     recipe = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField()
-    
+
     class Meta:
         model = User
         fields = (
