@@ -4,21 +4,9 @@ from .models import Follow, User
 
 
 class UserAdmin(admin.ModelAdmin):
-    list_display = (
-        "username",
-        "first_name",
-        "last_name",
-        "email"
-    )
-    search_fields = (
-        "first_name",
-        "last_name",
-        "username"
-    )
-    list_filter = (
-        "first_name",
-        "email"
-    )
+    list_display = ("username", "first_name", "last_name", "email")
+    search_fields = ("first_name", "last_name", "username")
+    list_filter = ("first_name", "email")
     empty_value_display = "-пусто-"
 
 
