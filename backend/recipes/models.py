@@ -1,3 +1,5 @@
+from tabnanny import verbose
+
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.db.models import UniqueConstraint
@@ -12,6 +14,10 @@ class Tag(models.Model):
 
     def __str__(self):
         return self.name
+
+    class Meta:
+        verbose_name = "Тег"
+        verbose_name_plural = "Теги"
 
 
 class Ingridients(models.Model):
@@ -50,6 +56,10 @@ class Recipe(models.Model):
 
     def __str__(self):
         return self.name
+
+    class Meta:
+        verbose_name = "Рецепт"
+        verbose_name_plural = "Рецепты"
 
 
 class RecipeIngredients(models.Model):
@@ -125,6 +135,9 @@ class ShoppingCart(models.Model):
         related_name="recipe_in_shopping_cart",
         verbose_name="Рецепт",
     )
+
+    def __str__(self):
+        pass
 
     class Meta:
         constraints = [

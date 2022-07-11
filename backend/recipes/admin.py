@@ -57,9 +57,14 @@ class TagAdmin(admin.ModelAdmin):
     list_filter = ("name", "slug")
 
 
+class FavoriteAdmin(admin.ModelAdmin):
+    list_display = ("user", "recipes")
+    list_filter = ("user", "recipes")
+
+
 admin.site.register(Recipe, RecipeAdmin)
 admin.site.register(Ingridients, IngridientsAdmin)
 admin.site.register(Tag, TagAdmin)
-admin.site.register(Favorite)
+admin.site.register(Favorite, FavoriteAdmin)
 admin.site.register(RecipeIngredients, RecipeIngredientsAdmin)
 admin.site.register(ShoppingCart, ShoppingCartAdmin)
