@@ -1,5 +1,6 @@
 from django.http.response import HttpResponse, HttpResponseNotFound
 from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, views, viewsets
 from rest_framework.response import Response
 
@@ -31,6 +32,8 @@ class RecipesViewSet(viewsets.ModelViewSet):
     permission_classes = [
         AuthorOrReadOnly,
     ]
+    filter_backends = (DjangoFilterBackend,)
+    filterset_fields = ("tags__name",)
     actions_list = ["POST", "PATCH"]
 
     def get_permissions(self):
@@ -45,10 +48,14 @@ class RecipesViewSet(viewsets.ModelViewSet):
 
 
 class FavoriteAPIView(views.APIView):
+    permission_classes = [AuthorOrReadOnly]
+
     def post(self, request, id):
         user_id = request.user.id
-        data = {"user": user_id, "recipe": id}
-        serializer = FavoriteSerializer(data=data, context={"request": request})
+        data = {"user": user_id, "recipes": id}
+        serializer = FavoriteSerializer(
+            data=data, context={"request": request}
+        )
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -56,7 +63,7 @@ class FavoriteAPIView(views.APIView):
     def delete(self, request, id):
         user = request.user
         recipe = get_object_or_404(Recipe, id=id)
-        deleting_obj = Favorite.objects.all().filter(user=user, recipe=recipe)
+        deleting_obj = Favorite.objects.all().filter(user=user, recipes=recipe)
         if not deleting_obj:
             return Response(status=status.HTTP_400_BAD_REQUEST)
         deleting_obj.delete()
@@ -67,7 +74,9 @@ class ShoppingCartAPIView(views.APIView):
     def post(self, request, id):
         user_id = request.user.id
         data = {"user": user_id, "recipe": id}
-        serializer = ShoppingCartSerializer(data=data, context={"request": request})
+        serializer = ShoppingCartSerializer(
+            data=data, context={"request": request}
+        )
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -75,7 +84,9 @@ class ShoppingCartAPIView(views.APIView):
     def delete(self, request, id):
         user = request.user
         recipe = get_object_or_404(Recipe, id=id)
-        deleting_obj = ShoppingCart.objects.all().filter(user=user, recipe=recipe)
+        deleting_obj = ShoppingCart.objects.all().filter(
+            user=user, recipe=recipe
+        )
         if not deleting_obj:
             return Response(status=status.HTTP_400_BAD_REQUEST)
         deleting_obj.delete()

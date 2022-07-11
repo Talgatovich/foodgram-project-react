@@ -13,7 +13,9 @@ class FollowCreateAPIView(views.APIView):
     def post(self, request, id):
         user_id = request.user.id
         data = {"user": user_id, "following": id}
-        serializer = FollowCreateSerializer(data=data, context={"request": request})
+        serializer = FollowCreateSerializer(
+            data=data, context={"request": request}
+        )
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -21,7 +23,9 @@ class FollowCreateAPIView(views.APIView):
     def delete(self, request, id):
         user = request.user
         following = get_object_or_404(User, id=id)
-        deleting_obj = Follow.objects.all().filter(user=user, following=following)
+        deleting_obj = Follow.objects.all().filter(
+            user=user, following=following
+        )
         if not deleting_obj:
             return Response(status=status.HTTP_400_BAD_REQUEST)
         deleting_obj.delete()

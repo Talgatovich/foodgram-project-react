@@ -1,5 +1,3 @@
-from xml.dom import ValidationErr
-
 from django.db.models import F
 from django.forms import ValidationError
 from django.shortcuts import get_object_or_404
@@ -33,7 +31,9 @@ class IngridientsListSerializer(serializers.ModelSerializer):
 class ShowRecipeIngredientsSerializer(serializers.ModelSerializer):
     id = serializers.ReadOnlyField(source="ingredient.id")
     name = serializers.ReadOnlyField(source="ingredient.name")
-    measurement_unit = serializers.ReadOnlyField(source="ingredient.measurement_unit")
+    measurement_unit = serializers.ReadOnlyField(
+        source="ingredient.measurement_unit"
+    )
 
     class Meta:
         model = RecipeIngredients
@@ -73,7 +73,7 @@ class RecipesListSerializer(serializers.ModelSerializer):
         if request.user.is_anonymous:
             return False
         user_id = request.user.id
-        favorite = Favorite.objects.all().filter(user=user_id, recipe=obj)
+        favorite = Favorite.objects.all().filter(user=user_id, recipes=obj)
         return favorite.exists()
 
     def get_is_in_shopping_cart(self, obj):
@@ -81,7 +81,9 @@ class RecipesListSerializer(serializers.ModelSerializer):
         if request.user.is_anonymous:
             return False
         user_id = request.user.id
-        recipe_in_cart = ShoppingCart.objects.all().filter(user=user_id, recipe=obj)
+        recipe_in_cart = ShoppingCart.objects.all().filter(
+            user=user_id, recipe=obj
+        )
         return recipe_in_cart.exists()
 
 
@@ -95,7 +97,9 @@ class RecipesIngredientSerializer(serializers.ModelSerializer):
 
 
 class RecipesCreateSerializer(serializers.ModelSerializer):
-    tags = serializers.PrimaryKeyRelatedField(queryset=Tag.objects.all(), many=True)
+    tags = serializers.PrimaryKeyRelatedField(
+        queryset=Tag.objects.all(), many=True
+    )
     ingredients = RecipesIngredientSerializer(many=True)
     image = Base64ImageField()
 
@@ -183,15 +187,15 @@ class FavoriteSerializer(serializers.ModelSerializer):
         model = Favorite
         fields = ("user", "recipes")
 
-    def validate_recipe(self, data):
+    def validate_recipes(self, data):
         user = self.context.get("request").user
-        recipe = self.initial_data.get("recipe")
-        if Favorite.objects.all().filter(user=user, recipe=recipe).exists():
+        recipe = self.initial_data.get("recipes")
+        if Favorite.objects.all().filter(user=user, recipes=recipe).exists():
             raise ValidationError("Этот рецепт у вас уже в избранном")
         return data
 
     def to_representation(self, instance):
-        data = ShowRecipeSerializer(instance.recipe).data
+        data = ShowRecipeSerializer(instance.recipes).data
         return data
 
 
@@ -202,6 +206,17 @@ class ShoppingCartSerializer(serializers.ModelSerializer):
     class Meta:
         model = ShoppingCart
         fields = ("user", "recipe")
+
+    def validate_recipe(self, data):
+        user = self.context.get("request").user
+        recipe = self.initial_data.get("recipe")
+        if (
+            ShoppingCart.objects.all()
+            .filter(user=user, recipe=recipe)
+            .exists()
+        ):
+            raise ValidationError("Этот рецепт уже в вашей корзине")
+        return data
 
     def to_representation(self, instance):
         data = ShowRecipeSerializer(instance.recipe).data

@@ -53,7 +53,9 @@ class FollowCreateSerializer(serializers.ModelSerializer):
         fields = ("user", "following")
         validators = [
             UniqueTogetherValidator(
-                queryset=Follow.objects.all(), fields=("user", "following")
+                queryset=Follow.objects.all(),
+                fields=("user", "following"),
+                message="Вы уже подписаны на этого пользователя",
             )
         ]
 
@@ -63,7 +65,11 @@ class FollowCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 "Вы не можете подписаться на самого себя!"
             )
+
         return value
+
+    # def to_representation(self, instance):
+    #    return FollowListSerializer(instance).data
 
 
 class FollowingRecipesSerializers(serializers.ModelSerializer):
@@ -106,7 +112,9 @@ class FollowListSerializer(serializers.ModelSerializer):
         request = self.context.get("request")
         context = {"request": request}
         recipes = obj.recipe.all()
-        return FollowingRecipesSerializers(recipes, context=context, many=True).data
+        return FollowingRecipesSerializers(
+            recipes, context=context, many=True
+        ).data
 
     def get_recipes_count(self, obj):
         count = obj.recipe.all().count()
