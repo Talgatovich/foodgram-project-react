@@ -5,7 +5,7 @@ from rest_framework import status, views, viewsets
 from rest_framework.response import Response
 
 from .models import Favorite, Ingridients, Recipe, ShoppingCart, Tag
-from .permissions import AuthorOrReadOnly, ReadOnly
+from .permissions import AuthorOrAdmin, ReadOnly
 from .serializers import (
     FavoriteSerializer,
     IngridientsListSerializer,
@@ -30,7 +30,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipesListSerializer
     permission_classes = [
-        AuthorOrReadOnly,
+        AuthorOrAdmin,
     ]
     filter_backends = (DjangoFilterBackend,)
     filterset_fields = ("tags__name",)
@@ -48,7 +48,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
 
 
 class FavoriteAPIView(views.APIView):
-    permission_classes = [AuthorOrReadOnly]
+    permission_classes = [AuthorOrAdmin]
 
     def post(self, request, id):
         user_id = request.user.id
