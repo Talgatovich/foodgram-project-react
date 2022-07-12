@@ -1,7 +1,7 @@
 from django.http.response import HttpResponse, HttpResponseNotFound
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import status, views, viewsets
+from rest_framework import filters, status, views, viewsets
 from rest_framework.response import Response
 
 from .models import Favorite, Ingridients, Recipe, ShoppingCart, Tag
@@ -24,6 +24,10 @@ class TagsViewSet(viewsets.ModelViewSet):
 class IngredientsViewSet(viewsets.ModelViewSet):
     queryset = Ingridients.objects.all()
     serializer_class = IngridientsListSerializer
+    filter_backends = [
+        filters.SearchFilter,
+    ]
+    search_fields = ("^name",)
 
 
 class RecipesViewSet(viewsets.ModelViewSet):
