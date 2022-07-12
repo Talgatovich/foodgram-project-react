@@ -2,6 +2,7 @@ from django.http.response import HttpResponse, HttpResponseNotFound
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, status, views, viewsets
+from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 
 from .models import Favorite, Ingridients, Recipe, ShoppingCart, Tag
@@ -19,11 +20,17 @@ from .serializers import (
 class TagsViewSet(viewsets.ModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagListSerializer
+    permission_classes = [
+        ReadOnly,
+    ]
 
 
 class IngredientsViewSet(viewsets.ModelViewSet):
     queryset = Ingridients.objects.all()
     serializer_class = IngridientsListSerializer
+    permission_classes = [
+        ReadOnly,
+    ]
     filter_backends = [
         filters.SearchFilter,
     ]
@@ -96,6 +103,8 @@ class ShoppingCartAPIView(views.APIView):
         deleting_obj.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+
+class DownloadShoppingCartAPIView(views.APIView):
     def get(self, request):
         ingridients = {}
         user = request.user
