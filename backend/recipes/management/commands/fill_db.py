@@ -1,5 +1,4 @@
 import json
-from itertools import count
 
 from django.core.management.base import BaseCommand
 from recipes.models import Ingridients

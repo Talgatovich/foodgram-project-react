@@ -14,11 +14,13 @@ from .models import (
 class RecipeTagInline(admin.TabularInline):
     model = RecipeTag
     extra = 1
+    min_num = 1
 
 
 class RecipeIngredientsInline(admin.TabularInline):
     model = RecipeIngredients
     extra = 1
+    min_num = 1
 
 
 class RecipeAdmin(admin.ModelAdmin):
@@ -29,6 +31,7 @@ class RecipeAdmin(admin.ModelAdmin):
         "author",
         "tags",
     )
+    search_fields = ("name", "author__username", "tags__name")
 
     def favorite_recipe(self, obj):
         return obj.favorite_recipe.all().count()
@@ -37,6 +40,7 @@ class RecipeAdmin(admin.ModelAdmin):
 class IngridientsAdmin(admin.ModelAdmin):
     list_display = ("name", "measurement_unit")
     list_filter = ("name",)
+    search_fields = ("name",)
 
 
 class RecipeIngredientsAdmin(admin.ModelAdmin):

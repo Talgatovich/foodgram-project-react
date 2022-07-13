@@ -1,20 +1,28 @@
+from django.contrib.auth import get_user_model
 from django.http.response import HttpResponse, HttpResponseNotFound
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, status, views, viewsets
-from rest_framework.permissions import IsAdminUser
+from rest_framework import filters, generics, status, views, viewsets
 from rest_framework.response import Response
 
-from .models import Favorite, Ingridients, Recipe, ShoppingCart, Tag
 from .permissions import AuthorOrAdmin, ReadOnly
 from .serializers import (
     FavoriteSerializer,
+    FollowCreateSerializer,
+    FollowListSerializer,
     IngridientsListSerializer,
     RecipesCreateSerializer,
     RecipesListSerializer,
     ShoppingCartSerializer,
     TagListSerializer,
 )
+
+from users.models import Follow  # isort:skip
+from recipes.models import Favorite, Ingridients, Tag  # isort:skip
+from recipes.models import ShoppingCart  # isort: skip
+from recipes.models import Recipe  # isort:skip
+
+User = get_user_model()
 
 
 class TagsViewSet(viewsets.ModelViewSet):
@@ -43,7 +51,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
     permission_classes = [
         AuthorOrAdmin,
     ]
-    filter_backends = (DjangoFilterBackend,)
+    filter_backends = (DjangoFilterBackend, filters.SearchFilter)
     filterset_fields = ("tags__name",)
     actions_list = ["POST", "PATCH"]
 
@@ -145,3 +153,36 @@ class DownloadShoppingCartAPIView(views.APIView):
         except IOError:
             response = HttpResponseNotFound("<h1>File not exist</h1>")
         return response
+
+
+class FollowCreateAPIView(views.APIView):
+    def post(self, request, id):
+        user_id = request.user.id
+        data = {"user": user_id, "following": id}
+        serializer = FollowCreateSerializer(
+            data=data, context={"request": request}
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def delete(self, request, id):
+        user = request.user
+        following = get_object_or_404(User, id=id)
+        deleting_obj = Follow.objects.all().filter(
+            user=user, following=following
+        )
+        if not deleting_obj:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        deleting_obj.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class FollowListAPIView(generics.ListAPIView):
+    queryset = Follow.objects.all()
+    serializer_class = FollowListSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        new_queryset = User.objects.all().filter(following__user=user)
+        return new_queryset

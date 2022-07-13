@@ -21,15 +21,22 @@ class Tag(models.Model):
 
 
 class Ingridients(models.Model):
-    name = models.CharField("Название", max_length=200)
-    measurement_unit = models.CharField("Единица измерения", max_length=100)
-
-    def __str__(self):
-        return self.name
+    name = models.CharField(
+        "Название",
+        max_length=200,
+        null=False,
+        blank=False,
+    )
+    measurement_unit = models.CharField(
+        "Единица измерения", max_length=100, null=False, blank=False
+    )
 
     class Meta:
         verbose_name = "Ингредиент"
         verbose_name_plural = "Ингредиенты"
+
+    def __str__(self):
+        return self.name
 
 
 class Recipe(models.Model):
@@ -48,7 +55,10 @@ class Recipe(models.Model):
         verbose_name="Картинка",
     )
     ingredients = models.ManyToManyField(
-        Ingridients, through="RecipeIngredients", verbose_name="ингридиент"
+        Ingridients,
+        through="RecipeIngredients",
+        verbose_name="ингридиент",
+        blank=False,
     )
     text = models.CharField("Описание", max_length=500)
     cooking_time = models.CharField("Время приготовления", max_length=20)
@@ -136,9 +146,6 @@ class ShoppingCart(models.Model):
         related_name="recipe_in_shopping_cart",
         verbose_name="Рецепт",
     )
-
-    def __str__(self):
-        pass
 
     class Meta:
         constraints = [
