@@ -2,7 +2,7 @@ from django.contrib import admin
 
 from .models import (
     Favorite,
-    Ingridients,
+    Ingridient,
     Recipe,
     RecipeIngredients,
     RecipeTag,
@@ -37,7 +37,7 @@ class RecipeAdmin(admin.ModelAdmin):
         return obj.favorite_recipe.all().count()
 
 
-class IngridientsAdmin(admin.ModelAdmin):
+class IngridientAdmin(admin.ModelAdmin):
     list_display = ("name", "measurement_unit")
     list_filter = ("name",)
     search_fields = ("name",)
@@ -62,12 +62,12 @@ class TagAdmin(admin.ModelAdmin):
 
 
 class FavoriteAdmin(admin.ModelAdmin):
-    list_display = ("user", "recipes")
-    list_filter = ("user", "recipes")
+    list_display = ("user", "recipe")
+    list_filter = ("user", "recipe")
 
 
 admin.site.register(Recipe, RecipeAdmin)
-admin.site.register(Ingridients, IngridientsAdmin)
+admin.site.register(Ingridient, IngridientAdmin)
 admin.site.register(Tag, TagAdmin)
 admin.site.register(Favorite, FavoriteAdmin)
 admin.site.register(RecipeIngredients, RecipeIngredientsAdmin)

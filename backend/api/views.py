@@ -1,5 +1,4 @@
 from django.contrib.auth import get_user_model
-from django.http.response import HttpResponse, HttpResponseNotFound
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, generics, status, views, viewsets
@@ -10,15 +9,16 @@ from .serializers import (
     FavoriteSerializer,
     FollowCreateSerializer,
     FollowListSerializer,
-    IngridientsListSerializer,
+    IngridientListSerializer,
     RecipesCreateSerializer,
     RecipesListSerializer,
     ShoppingCartSerializer,
     TagListSerializer,
 )
+from .utils import create_ingredients_list, dowload_list
 
 from users.models import Follow  # isort:skip
-from recipes.models import Favorite, Ingridients, Tag  # isort:skip
+from recipes.models import Favorite, Ingridient, Tag  # isort:skip
 from recipes.models import ShoppingCart  # isort: skip
 from recipes.models import Recipe  # isort:skip
 
@@ -34,8 +34,8 @@ class TagsViewSet(viewsets.ModelViewSet):
 
 
 class IngredientsViewSet(viewsets.ModelViewSet):
-    queryset = Ingridients.objects.all()
-    serializer_class = IngridientsListSerializer
+    queryset = Ingridient.objects.all()
+    serializer_class = IngridientListSerializer
     permission_classes = [
         ReadOnly,
     ]
@@ -51,7 +51,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
     permission_classes = [
         AuthorOrAdmin,
     ]
-    filter_backends = (DjangoFilterBackend, filters.SearchFilter)
+    filter_backends = (DjangoFilterBackend,)
     filterset_fields = ("tags__name",)
     actions_list = ["POST", "PATCH"]
 
@@ -71,7 +71,7 @@ class FavoriteAPIView(views.APIView):
 
     def post(self, request, id):
         user_id = request.user.id
-        data = {"user": user_id, "recipes": id}
+        data = {"user": user_id, "recipe": id}
         serializer = FavoriteSerializer(
             data=data, context={"request": request}
         )
@@ -82,7 +82,7 @@ class FavoriteAPIView(views.APIView):
     def delete(self, request, id):
         user = request.user
         recipe = get_object_or_404(Recipe, id=id)
-        deleting_obj = Favorite.objects.all().filter(user=user, recipes=recipe)
+        deleting_obj = Favorite.objects.all().filter(user=user, recipe=recipe)
         if not deleting_obj:
             return Response(status=status.HTTP_400_BAD_REQUEST)
         deleting_obj.delete()
@@ -114,45 +114,11 @@ class ShoppingCartAPIView(views.APIView):
 
 class DownloadShoppingCartAPIView(views.APIView):
     def get(self, request):
-        ingridients = {}
         user = request.user
         recipes_in_cart = ShoppingCart.objects.all().filter(user=user)
-
-        for obj in recipes_in_cart:
-            recipe = obj.recipe.recipe
-            for val in recipe.all():
-                name = val.ingredient.name
-                amount = val.amount
-                measurement_unit = val.ingredient.measurement_unit
-                if name not in ingridients:
-                    ingridients[name] = {
-                        "measurement_unit": measurement_unit,
-                        "amount": amount,
-                    }
-                else:
-                    ingridients[name]["amount"] += amount
-
-        with open("Ingredients_list.txt", "w", encoding="utf-8") as file:
-            for key in ingridients:
-                file.write(
-                    (
-                        f'{key} - {ingridients[key]["amount"]}'
-                        f'{ingridients[key]["measurement_unit"]} \n'
-                    )
-                )
-
-        file_location = "./Ingredients_list.txt"
-        try:
-            with open(file_location, "r", encoding="utf-8") as f:
-                file_data = f.read()
-
-            response = HttpResponse(file_data, content_type="text/plain")
-            response[
-                "Content-Disposition"
-            ] = 'attachment; filename="Ingredients_list.txt"'
-        except IOError:
-            response = HttpResponseNotFound("<h1>File not exist</h1>")
-        return response
+        create_ingredients_list(recipes_in_cart)
+        file_location = "./api/Ingredients_list.txt"
+        return dowload_list(file_location)
 
 
 class FollowCreateAPIView(views.APIView):

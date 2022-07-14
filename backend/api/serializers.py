@@ -1,7 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.db.models import F
 from django.forms import ValidationError
-from django.shortcuts import get_object_or_404
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
@@ -9,7 +8,7 @@ from rest_framework.validators import UniqueTogetherValidator
 
 from recipes.models import (  # isort: skip
     Favorite,
-    Ingridients,
+    Ingridient,
     Recipe,
     RecipeIngredients,
     ShoppingCart,
@@ -133,9 +132,9 @@ class TagListSerializer(serializers.ModelSerializer):
         fields = ("id", "name", "color", "slug")
 
 
-class IngridientsListSerializer(serializers.ModelSerializer):
+class IngridientListSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Ingridients
+        model = Ingridient
         fields = ("id", "name", "measurement_unit")
 
 
@@ -176,7 +175,7 @@ class RecipesListSerializer(serializers.ModelSerializer):
         )
 
     def get_ingredients(self, obj):
-        ingredients = RecipeIngredients.objects.filter(recipe=obj)
+        ingredients = obj.recipe.all()
         return ShowRecipeIngredientsSerializer(ingredients, many=True).data
 
     def get_is_favorited(self, obj):
@@ -184,7 +183,7 @@ class RecipesListSerializer(serializers.ModelSerializer):
         if request.user.is_anonymous:
             return False
         user_id = request.user.id
-        favorite = Favorite.objects.all().filter(user=user_id, recipes=obj)
+        favorite = Favorite.objects.all().filter(user=user_id, recipe=obj)
         return favorite.exists()
 
     def get_is_in_shopping_cart(self, obj):
@@ -199,12 +198,17 @@ class RecipesListSerializer(serializers.ModelSerializer):
 
 
 class RecipesIngredientSerializer(serializers.ModelSerializer):
-    id = serializers.PrimaryKeyRelatedField(queryset=Ingridients.objects.all())
+    id = serializers.PrimaryKeyRelatedField(queryset=Ingridient.objects.all())
     amount = serializers.IntegerField()
 
     class Meta:
         model = RecipeIngredients
         fields = ("id", "amount")
+
+    def validate_amount(self, value):
+        if value < 1:
+            raise ValidationError("Количество не может быть меньше 1")
+        return value
 
 
 class RecipesCreateSerializer(serializers.ModelSerializer):
@@ -275,6 +279,10 @@ class RecipesCreateSerializer(serializers.ModelSerializer):
                 raise ValidationError(
                     "Убедитесь, что это значение больше либо равно 1."
                 )
+            if ingredients.count(ingredient) > 1:
+                id = ingredient["id"]
+                name = Ingridient.objects.all().get(id=id).name
+                raise ValidationError(f"{name} уже есть в списке")
         return data
 
     def to_representation(self, recipe):
@@ -291,22 +299,22 @@ class ShowRecipeSerializer(serializers.ModelSerializer):
 
 
 class FavoriteSerializer(serializers.ModelSerializer):
-    recipes = serializers.PrimaryKeyRelatedField(queryset=Recipe.objects.all())
+    recipe = serializers.PrimaryKeyRelatedField(queryset=Recipe.objects.all())
     user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
 
     class Meta:
         model = Favorite
-        fields = ("user", "recipes")
+        fields = ("user", "recipe")
 
-    def validate_recipes(self, data):
+    def validate_recipe(self, data):
         user = self.context.get("request").user
-        recipe = self.initial_data.get("recipes")
-        if Favorite.objects.all().filter(user=user, recipes=recipe).exists():
+        recipe = self.initial_data.get("recipe")
+        if Favorite.objects.all().filter(user=user, recipe=recipe).exists():
             raise ValidationError("Этот рецепт у вас уже в избранном")
         return data
 
     def to_representation(self, instance):
-        data = ShowRecipeSerializer(instance.recipes).data
+        data = ShowRecipeSerializer(instance.recipe).data
         return data
 
 

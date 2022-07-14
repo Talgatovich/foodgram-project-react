@@ -1,6 +1,5 @@
-from tabnanny import verbose
-
 from django.contrib.auth import get_user_model
+from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models import UniqueConstraint
 
@@ -20,7 +19,7 @@ class Tag(models.Model):
         verbose_name_plural = "Теги"
 
 
-class Ingridients(models.Model):
+class Ingridient(models.Model):
     name = models.CharField(
         "Название",
         max_length=200,
@@ -55,13 +54,17 @@ class Recipe(models.Model):
         verbose_name="Картинка",
     )
     ingredients = models.ManyToManyField(
-        Ingridients,
+        Ingridient,
         through="RecipeIngredients",
-        verbose_name="ингридиент",
+        related_name="recipe_ingredients",
+        verbose_name="ингредиент",
         blank=False,
     )
     text = models.CharField("Описание", max_length=500)
-    cooking_time = models.CharField("Время приготовления", max_length=20)
+    cooking_time = models.PositiveIntegerField(
+        "Время приготовления",
+        validators=[MinValueValidator(1)],
+    )
     pub_date = models.DateTimeField("Дата публикации", auto_now_add=True)
 
     def __str__(self):
@@ -81,16 +84,24 @@ class RecipeIngredients(models.Model):
         verbose_name="Рецепт",
     )
     ingredient = models.ForeignKey(
-        Ingridients,
+        Ingridient,
         on_delete=models.PROTECT,
         related_name="ingredient",
         verbose_name="Ингредиент",
     )
-    amount = models.PositiveIntegerField(verbose_name="Количество")
+    amount = models.PositiveIntegerField(
+        verbose_name="Количество", validators=[MinValueValidator(1)]
+    )
 
     class Meta:
         verbose_name = "Ингредиент"
         verbose_name_plural = "Ингредиенты в рецептах"
+        constraints = [
+            UniqueConstraint(
+                fields=["recipe", "ingredient"],
+                name="recipe_ingredient_unique",
+            )
+        ]
 
 
 class RecipeTag(models.Model):
@@ -107,6 +118,12 @@ class RecipeTag(models.Model):
     class Meta:
         verbose_name = "Тег"
         verbose_name_plural = "Теги"
+        constraints = [
+            UniqueConstraint(
+                fields=["recipe", "tags"],
+                name="recipe_tags_unique",
+            )
+        ]
 
 
 class Favorite(models.Model):
@@ -116,7 +133,7 @@ class Favorite(models.Model):
         related_name="favorite",
         verbose_name="пользователь",
     )
-    recipes = models.ForeignKey(
+    recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
         related_name="favorite_recipe",
@@ -126,7 +143,7 @@ class Favorite(models.Model):
     class Meta:
         constraints = [
             UniqueConstraint(
-                fields=["user", "recipes"], name="recipe_in_favorite_unique"
+                fields=["user", "recipe"], name="recipe_in_favorite_unique"
             )
         ]
         verbose_name = "Избранное"
