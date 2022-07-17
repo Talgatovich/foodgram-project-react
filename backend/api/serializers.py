@@ -275,7 +275,7 @@ class RecipesCreateSerializer(serializers.ModelSerializer):
         if ingredients == []:
             raise ValidationError("Необходимо выбрать хотя бы один ингредиент")
         for ingredient in ingredients:
-            if int(ingredient["amount"] <= 0):
+            if int(ingredient["amount"]) <= 0:
                 raise ValidationError(
                     "Убедитесь, что это значение больше либо равно 1."
                 )

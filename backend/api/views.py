@@ -1,9 +1,10 @@
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, generics, status, views, viewsets
+from rest_framework import generics, status, views, viewsets
 from rest_framework.response import Response
 
+from .filters import IngredientFilter, RecipeFilter
 from .permissions import AuthorOrAdmin, ReadOnly
 from .serializers import (
     FavoriteSerializer,
@@ -31,6 +32,7 @@ class TagsViewSet(viewsets.ModelViewSet):
     permission_classes = [
         ReadOnly,
     ]
+    pagination_class = None
 
 
 class IngredientsViewSet(viewsets.ModelViewSet):
@@ -39,10 +41,9 @@ class IngredientsViewSet(viewsets.ModelViewSet):
     permission_classes = [
         ReadOnly,
     ]
-    filter_backends = [
-        filters.SearchFilter,
-    ]
-    search_fields = ("^name",)
+    filter_backends = (DjangoFilterBackend,)
+    pagination_class = None
+    filterset_class = IngredientFilter
 
 
 class RecipesViewSet(viewsets.ModelViewSet):
@@ -52,8 +53,9 @@ class RecipesViewSet(viewsets.ModelViewSet):
         AuthorOrAdmin,
     ]
     filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ("tags__name",)
+    filterset_class = RecipeFilter
     actions_list = ["POST", "PATCH"]
+    lookup_field = "id"
 
     def get_permissions(self):
         if self.action == "retrieve":
