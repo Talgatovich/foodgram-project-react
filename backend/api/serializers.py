@@ -270,7 +270,7 @@ class RecipesCreateSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
-    def validate_ingredients(self, data):
+    def validate(self, data):
         ingredients = self.initial_data.get("ingredients")
         if ingredients == []:
             raise ValidationError("Необходимо выбрать хотя бы один ингредиент")
