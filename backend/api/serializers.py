@@ -274,21 +274,18 @@ class RecipesCreateSerializer(serializers.ModelSerializer):
         ingredients = self.initial_data.get("ingredients")
         if ingredients == []:
             raise ValidationError(
-                {"ingredients": "Необходимо добавить хотя бы 1 ингредиент"}
+                {"Ошибка": "Необходимо выбрать хотя бы один ингредиент"}
+            )
+        amounts = data.get("ingredients")
+        if [item for item in amounts if item["amount"] < 1]:
+            raise serializers.ValidationError(
+                {"amount": "Минимальное количество ингридиента 1"}
             )
         for ingredient in ingredients:
-            if int(ingredient["amount"]) < 1:
-                raise serializers.ValidationError(
-                    {
-                        "amount": "Убедитесь, что это значение больше либо равно 1"
-                    }
-                )
             if ingredients.count(ingredient) > 1:
                 id = ingredient["id"]
                 name = Ingridient.objects.all().get(id=id).name
-                raise ValidationError(
-                    {"ingredients": f"{name} уже есть в списке"}
-                )
+                raise ValidationError({f"{name}": f"{name} уже есть в списке"})
         return data
 
     def to_representation(self, recipe):
