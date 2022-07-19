@@ -270,22 +270,24 @@ class RecipesCreateSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
-    def validate_ingredients(self, data):
+    def validate(self, data):
         ingredients = self.initial_data.get("ingredients")
         if ingredients == []:
             raise ValidationError(
-                {"ingredients": "Минимальное количество ингридиента 1"}
+                {"ingredients": "Необходимо добавить хотя бы 1 ингредиент"}
             )
         for ingredient in ingredients:
             if int(ingredient["amount"]) < 1:
-                raise ValidationError(
-                    "Убедитесь, что это значение больше либо равно 1."
+                raise serializers.ValidationError(
+                    {
+                        "amount": "Убедитесь, что это значение больше либо равно 1"
+                    }
                 )
             if ingredients.count(ingredient) > 1:
                 id = ingredient["id"]
                 name = Ingridient.objects.all().get(id=id).name
                 raise ValidationError(
-                    {"ingredients": "Ингридиенты не должны повторяться"}
+                    {"ingredients": f"{name} уже есть в списке"}
                 )
         return data
 
