@@ -43,10 +43,7 @@ jobs:
         with:
           context: backend/
           push: true
-          tags: talgatovich/foodgram:v1
-          context: frontend/
-          push: true
-          tags: talgatovich/foodgram_frontend:v1
+          tags: talgatovich/foodgram:v1          
   deploy:
     runs-on: ubuntu-latest
     needs: build_and_push_to_docker_hub
