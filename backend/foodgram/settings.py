@@ -18,7 +18,7 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ["84.252.138.21", "localhost", "127.0.0.1", "backend"]
+ALLOWED_HOSTS = ["84.252.138.21", "localhost", "127.0.0.1", "backend"]  # ["*"]
 
 
 # Application definition
@@ -77,7 +77,7 @@ DATABASES = {
         "USER": os.getenv("POSTGRES_USER"),
         "PASSWORD": os.getenv("POSTGRES_PASSWORD"),
         "HOST": os.getenv("DB_HOST"),
-        "PORT": os.getenv("DB_PORT"),  #
+        "PORT": os.getenv("DB_PORT"),
     }
 }
 

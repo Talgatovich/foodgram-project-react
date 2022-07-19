@@ -237,7 +237,7 @@ class RecipesCreateSerializer(serializers.ModelSerializer):
             if RecipeIngredients.objects.filter(
                 recipe=recipe, ingredient=ingredient_id
             ).exists():
-                raise ValidationError("{Ингредиент уже есть в списке")
+                amount += F("amount")
             RecipeIngredients.objects.update_or_create(
                 recipe=recipe,
                 ingredient=ingredient_id,
@@ -270,19 +270,23 @@ class RecipesCreateSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
-    def validate(self, data):
+    def validate_ingredients(self, data):
         ingredients = self.initial_data.get("ingredients")
         if ingredients == []:
-            raise ValidationError("Необходимо выбрать хотя бы один ингредиент")
+            raise ValidationError(
+                {"ingredients": "Минимальное количество ингридиента 1"}
+            )
         for ingredient in ingredients:
-            if int(ingredient["amount"]) <= 0:
+            if int(ingredient["amount"]) < 1:
                 raise ValidationError(
                     "Убедитесь, что это значение больше либо равно 1."
                 )
             if ingredients.count(ingredient) > 1:
                 id = ingredient["id"]
                 name = Ingridient.objects.all().get(id=id).name
-                raise ValidationError(f"{name} уже есть в списке")
+                raise ValidationError(
+                    {"ingredients": "Ингридиенты не должны повторяться"}
+                )
         return data
 
     def to_representation(self, recipe):
