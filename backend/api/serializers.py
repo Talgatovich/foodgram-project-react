@@ -6,7 +6,7 @@ from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
-from recipes.models import (  # isort: skip
+from recipes.models import (
     Favorite,
     Ingridient,
     Recipe,
@@ -14,8 +14,7 @@ from recipes.models import (  # isort: skip
     ShoppingCart,
     Tag,
 )
-from users.models import Follow  # isort: skip
-from recipes.models import Recipe  # isort:skip
+from users.models import Follow
 
 User = get_user_model()
 
