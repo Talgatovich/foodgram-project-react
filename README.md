@@ -96,20 +96,4 @@ docker-compose exec backend python manage.py createsuperuser
 
 ---
 
-#### Вход в админку
-
-login:
-
-```
-admin
-```
-
-password:
-
-```
-adminadmin
-```
-
----
-
 Автор: [Ибятов Раиль](https://github.com/Talgatovich)
